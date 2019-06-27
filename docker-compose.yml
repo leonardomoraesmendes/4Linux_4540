@@ -1,12 +1,13 @@
-version: '3.7'
+version: '2.4'
 services:
   wordpress:
-    image: al540/wordpress:stack
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512m
+    build: .
+    hostname: wordpress
+    networks:
+      - dmz
+    cpu_count: 1
+    cpu_percent: 50
+    mem_limit: 1024m
     ports:
       - "80:80"
     depends_on:
@@ -14,27 +15,23 @@ services:
     
   dbserver:
     image: mysql:5.7
-    volumes:
-       -
-        type: volume
-        source: abobora
-        target: /var/lib/mysql
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints: 
-          - node.labels.type == homolog
+    networks:
+      - dmz
+    cpu_count: 1
+    cpu_percent: 50
     environment:
       MYSQL_ROOT_PASSWORD: 4linux
       MYSQL_DATABASE: wordpress
       MYSQL_USER: wordpressuser
       MYSQL_PASSWORD: 4linux
-
+    restart: always
+    volumes:
+      - "treta:/var/lib/mysql"
 
 volumes:
-  abobora:
-    driver_opts:
-      type: "nfs"
-      o: "addr=manager01,nolock,soft,rw"
-      device: ":/home/suporte/storage/banco"
+  treta:
+    external: true
+networks:
+  dmz:
+    driver: bridge
+

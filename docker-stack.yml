@@ -1,0 +1,40 @@
+version: '3.7'
+services:
+  wordpress:
+    image: al540/wordpress:stack
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+    ports:
+      - "80:80"
+    depends_on:
+      - dbserver
+    
+  dbserver:
+    image: mysql:5.7
+    volumes:
+       -
+        type: volume
+        source: abobora
+        target: /var/lib/mysql
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == homolog
+    environment:
+      MYSQL_ROOT_PASSWORD: 4linux
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpressuser
+      MYSQL_PASSWORD: 4linux
+
+
+volumes:
+  abobora:
+    driver_opts:
+      type: "nfs"
+      o: "addr=manager01,nolock,soft,rw"
+      device: ":/home/suporte/storage/banco"
